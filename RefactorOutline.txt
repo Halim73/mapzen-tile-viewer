@@ -1,0 +1,63 @@
+scripts:
+Utilities - this will include things like resolveSeems, allocateWebsockets, really any function defined outside of a class
+Tile - this will include all the fields and methods associated with a mapzen tile
+Main - this will drive the program, determining when utility and tile methods are called based on user input
+
+
+Workflow:
+User enters a destination
+Tile with these parameters becomes the central tile
+Tiles are grabbed around this tile such that the resulting square fills the entire screen
+	Raycaster originating from camera is used to determine the location of the central tile at any given time
+	As user drags left and right, the location of the central tile will change.
+		When this occurs, tiles are retrieved around new tile to fill the screen
+			Those tiles that are already rendered within appropriate distance of central tile will remain, while those outside radius will be discarded
+				This will be determined by the distance of the tiles from the center (determined by their coordinates field) and the screen width
+	As user zooms, once appropriate distance is reached (either near or far) server for next zoom level is called for the tile with coordinates corresponding to the current center
+	When tiles are added, since we know both their coordinates and the original center, they can easily be translated to the correct location
+		IMPORTANT: THIS MAKES IT CRUCIAL THAT WE LOG THE LOCATION OF THE INITIAL CENTER EACH TIME USER ENTERS A NEW LOCATION OR ZOOMS TO THE NEXT LEVEL
+	Each time a tile is added, it is added to an array of tiles. Similarly, each time a tile is removed, it is removed from the array.
+		Upon addition, the tile is added to the neighbor list of any appropriate tiles. These tiles will also be added to its neighbor list.
+			This will allow for seem resolution
+Server role is much simpler than before
+	All the server needs to do is retrieve the tiles and pass their decoded data back
+		The server need not know anything about the position of the tiles, because this will be resolved client side
+		Should make multithreading less convoluted
+		Server should keep a cache of recently collected tiles, so that if user moves back to previous location, the tiles that were removed do not need to be fetched again
+		
+		
+Make sure to include utilities before tile js because tile will be calling utilities.
+Make a tileMap class so that it is easy to modify the entire map (particularly for removing tiles)
+	methods: addTile, removeExcess, addNeighbors
+	
+Necessary Utilities:
+	convertLatLon
+	openfunc
+	
+Variables needed in main or utilities:
+	worldWidth and worldDepth
+	origin
+	
+
+New Utilities
+	findTiles(center, radius): this will find all tiles within radius of center and return an array of their coordinates
+		Note: Since main will store an array of current tile coordinates, server will only retrieve those not currently rendered
+		Main will also be responsible for keeping track of current zoom level
+	
+Investigate: Does raycaster need to be called inside of renderer function?
+
+Server is sent web mercator coordinates of tile.
+	Note that the server does not need to be sent the zoom level, because each server corresponds to a single zoom level
+	
+Don't forget to increase zoom level upon switching web socket!
+
+TileMap will be called tileMap in main'
+
+Given a radius and the coordinates of the central tile, how do we determine how many tiles will fill the screen?
+	Calculate screen dimensions
+	Calculate projected dimensions of tile grid given coordinates and radius
+	screenDimension = s * mapDimension, where s is some scaling factor
+	=> calculate s = screenDimension/mapDimension
+	multiply tile dimensions and elevations by s
+		Could potentially lead to tiles with elevation exceeding camera height
+			But the height cannot be changed, as it would change the screen dimensions
