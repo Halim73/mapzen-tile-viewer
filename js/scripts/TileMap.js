@@ -16,7 +16,7 @@ class TileMap {
 		for(var i = 0; i < this.map.length; i++) {
 			console.log("testing tile: ");
 			console.log(this.map[i]);
-			if(Math.abs(this.map[i].coordinates[0] - center.coordinates[0]) > radius || Math.abs(this.map[i].coordinates[1] - center[1]) > radius) {
+			if(Math.abs(this.map[i].coordinates[0] - center.coordinates[0]) > radius || Math.abs(this.map[i].coordinates[1] - center.coordinates[1]) > radius) {
 				this.map[i].remove();
 				console.log("removing tile: ");
 				console.log(this.map[i]);

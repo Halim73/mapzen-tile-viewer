@@ -180,7 +180,7 @@ function renderScene() {
 		if(INTERSECTED != null) {
 			var potentialNewCenter = INTERSECTED.userData.coordinates;
 			if(!currentCenter.equals(potentialNewCenter)) {
-				console.log("Made it here");
+				console.log("current center is being changed");
 				console.log("tileMap at this point: ");
 				console.log(tileMap.map);
 				//Set intersected tile as new center
@@ -191,8 +191,7 @@ function renderScene() {
 				
 				//Add tiles within new view range
 				var tileCoords = findTiles(currentCenter, radius);
-				console.log("tile coordinates to retrieve ");
-				console.log(tileCoords);
+
 				for(var i = 0; i < tileCoords.length; i++) {
 					if(!tileMap.contains(tileCoords[i])) {
 						console.log("sending tile coordinates: ");
