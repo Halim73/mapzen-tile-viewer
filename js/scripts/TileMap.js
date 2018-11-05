@@ -11,20 +11,20 @@ class TileMap {
 	
 	//Removes old tiles no longer in frame
 	update(center, radius) {
-		console.log("current center: ");
-		console.log(center);
+		//console.log("current center: ");
+		//console.log(center);'
 		for(var i = 0; i < this.map.length; i++) {
-			console.log("testing tile: ");
-			console.log(this.map[i]);
+			//console.log("testing tile: ");
+			//console.log(this.map[i]);
 			if(Math.abs(this.map[i].coordinates[0] - center.coordinates[0]) > radius || Math.abs(this.map[i].coordinates[1] - center.coordinates[1]) > radius) {
 				this.map[i].remove();
-				console.log("removing tile: ");
-				console.log(this.map[i]);
+				//console.log("removing tile: ");
+				//console.log(this.map[i]);
 				this.map.splice(i, 1);
 			}
 		}
-		console.log("tileMap after update: ");
-		console.log(this.map);
+		//console.log("tileMap after update: ");
+		//console.log(this.map);
 	}
 	
 	//Check for neighbors in the map

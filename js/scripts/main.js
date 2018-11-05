@@ -16,7 +16,7 @@ worldHalfWidth = worldWidth / 2, worldHalfDepth = worldDepth / 2;
 var type = "terrarium";
 var scale = 1;
 var clock = new THREE.Clock();
-var radius = 1;
+var radius = 2;
 var tileMap;
 var webSockets = initiateWebSockets();
 var currentCenter;
@@ -53,7 +53,7 @@ function initiateMap(values) {
 	// tileSize = valueSplit[4];
 	// screenWidth = (radius + 1) * tileSize * calculateGroundResolution(tileMap.origin, zoom);
 	// camera.position.y = screenWidth / (2 * Math.tan((Math.PI * camera.fov)/(180 * 2)));
-	camera.position.y = 120000;
+	//camera.position.y = 120000;
 	openfunc(ws, tileMap, stats, camera, controls, clock, raycaster, scene, currentCenter, radius, renderer, container);
 	
 	if (values == null || values == "") {
@@ -61,6 +61,8 @@ function initiateMap(values) {
 	} else {
 		container.innerHTML = "<br></br>Generating world..."
 		ws.send(origin);
+		//camera.position.x = 0;
+		//camera.position.z = 0;
 	}
 }
 
@@ -98,9 +100,16 @@ function openfunc() {
 		//Initiate currentCenter
 		if(currentCenter == null) {
 			currentCenter = tile;
+			
 			if(!tileMap.contains(currentCenter.coordinates)) {
 				tileMap.addTile(tile);
 				tile.createGeometry();
+				var screenWidth = ((2 * radius) + 1) * currentCenter.geometry.parameters.width;
+				console.log("screen width");
+				console.log(screenWidth);
+				camera.position.y = screenWidth / (2 * Math.tan((Math.PI * camera.fov)/(180 * 2)));
+				console.log("the camera is at position: ");
+				console.log(camera.position.y);
 				tileMap.addNeighbors(tile);
 				tile.resolveSeems();
 				tile.createMesh()
@@ -122,7 +131,7 @@ function openfunc() {
 			tile.createGeometry();
 			tile.geometry.computeBoundingBox();   //Improve raycaster performance
 			tileMap.addNeighbors(tile);
-			tileMap.update(currentCenter, radius);
+			//tileMap.update(currentCenter, radius);
 			tile.resolveSeems();
 			tile.createMesh();
 		}
@@ -164,19 +173,20 @@ function animate() {
 
 function renderScene() {
 	controls.update(clock.getDelta());
-	
+
 	raycaster.setFromCamera( new THREE.Vector2(), camera );  
 	var intersects = raycaster.intersectObjects( scene.children );
 	if ( intersects.length > 0 ) {
 		if ( INTERSECTED != intersects[ 0 ].object ) {
 			if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
-			INTERSECTED = intersects[ 0 ].object; //howdy
+			INTERSECTED = intersects[ 0 ].object; 
 			INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
 			INTERSECTED.material.emissive.setHex( 0xff0000 );
 	
 			console.log(INTERSECTED.geometry.boundingBox.max.y);
 			console.log(INTERSECTED.userData.coordinates);
 		}
+		
 		if(INTERSECTED != null) {
 			var potentialNewCenter = INTERSECTED.userData.coordinates;
 			if(!currentCenter.equals(potentialNewCenter)) {
@@ -201,7 +211,21 @@ function renderScene() {
 				}
 			}
 			
-			//tileMap.update(currentCenter, radius);               //Update gets called to early in above conditional!
+			if(intersects[0].distance < 5 * INTERSECTED.geometry.boundingBox.max.y) {
+				tileMap.deleteMap();
+				console.log("potential new center");
+				console.log(potentialNewCenter);
+				var zoomLatLon = convertToLatLon(potentialNewCenter, zoom);
+				zoom++;
+				var zoomValues = zoomLatLon[0] + "," + zoomLatLon[1] + "," + zoom + "," + tileSize;
+				console.log("zoom values");
+				console.log(zoomValues);
+				//currentCenter = null;
+				camera.position.y = 120000;
+				initiateMap(zoomValues);
+			}
+			
+			tileMap.update(currentCenter, radius);               //Update gets called too early in above conditional!
 		}
 	} 
 	else {

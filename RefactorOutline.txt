@@ -61,3 +61,6 @@ Given a radius and the coordinates of the central tile, how do we determine how 
 	multiply tile dimensions and elevations by s
 		Could potentially lead to tiles with elevation exceeding camera height
 			But the height cannot be changed, as it would change the screen dimensions
+			
+			
+Need to fix: Camera does not return to origin when attempting to view a new location
