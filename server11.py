@@ -20,7 +20,7 @@ filetype = "terrarium"
 size = 256
 
 ##Each server corresponds to a single zoom level
-zoom = 10
+zoom = 11
 
 #Represents a single mapzen tile
 class Tile:
@@ -94,7 +94,7 @@ async def consumer_handler(websocket, path):
         jsonTile = {"Coordinates": new_tile.coordinates, "Data": new_tile.data}
         await websocket.send(json.dumps(jsonTile))
         
-start_server = websockets.serve(consumer_handler, port=3010)
+start_server = websockets.serve(consumer_handler, port=3011)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
