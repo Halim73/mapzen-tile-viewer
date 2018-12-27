@@ -64,3 +64,7 @@ Given a radius and the coordinates of the central tile, how do we determine how 
 			
 			
 Need to fix: Camera does not return to origin when attempting to view a new location
+	Tile is translated to appropriate location based on current center
+		When Zooming or pressing button, ignore this functionality
+	One possible solution: set current center as origin of tileMap, and then translate all tiles relative to it
+		Won't work!

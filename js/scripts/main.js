@@ -54,6 +54,7 @@ function initiateMap(values) {
 	// screenWidth = (radius + 1) * tileSize * calculateGroundResolution(tileMap.origin, zoom);
 	// camera.position.y = screenWidth / (2 * Math.tan((Math.PI * camera.fov)/(180 * 2)));
 	//camera.position.y = 120000;
+	currentCenter = null;
 	openfunc(ws, tileMap, stats, camera, controls, clock, raycaster, scene, currentCenter, radius, renderer, container);
 	
 	if (values == null || values == "") {
@@ -64,6 +65,12 @@ function initiateMap(values) {
 		//camera.position.x = 0;
 		//camera.position.z = 0;
 	}
+	if(controls) {
+		controls.dispose();
+	}
+	controls = new THREE.OrbitControls( camera, renderer.domElement );
+	controls.minPolarAngle = 0;
+	controls.maxPolarAngle = 0.2 * Math.PI;
 }
 
 function init() {
@@ -84,9 +91,9 @@ function init() {
 	var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
 	scene.add( directionalLight );
 
-	controls = new THREE.OrbitControls( camera, renderer.domElement );
-	controls.minPolarAngle = 0;
-	controls.maxPolarAngle = 0.2 * Math.PI;
+	//controls = new THREE.OrbitControls( camera, renderer.domElement );
+	//controls.minPolarAngle = 0;
+	//controls.maxPolarAngle = 0.2 * Math.PI;
 
 	raycaster = new THREE.Raycaster();
 }
@@ -166,7 +173,7 @@ function onWindowResize() {
 
 function animate() {
 	requestAnimationFrame(animate);
-
+	controls.update();
 	renderScene(camera, controls, clock, raycaster, scene, currentCenter, tileMap, radius, ws);
 	stats.update();
 }
@@ -191,11 +198,12 @@ function renderScene() {
 			var potentialNewCenter = INTERSECTED.userData.coordinates;
 			if(!currentCenter.equals(potentialNewCenter)) {
 				console.log("current center is being changed");
+				console.log(origin);
 				console.log("tileMap at this point: ");
 				console.log(tileMap.map);
 				//Set intersected tile as new center
 				currentCenter = tileMap.get(potentialNewCenter);
-	
+		
 				//Remove tiles outside of view range
 				tileMap.update(currentCenter, radius);
 				
@@ -222,8 +230,26 @@ function renderScene() {
 				console.log(zoomValues);
 				//currentCenter = null;
 				camera.position.y = 120000;
+				controls.update();
 				initiateMap(zoomValues);
 			}
+			
+			// if(intersects[0].distance > 50 * INTERSECTED.geometry.boundingBox.max.y) {
+				// console.log("distance away");
+				// console.log(intersects[0].distance);
+				// tileMap.deleteMap();
+				// console.log("potential new center");
+				// console.log(potentialNewCenter);
+				// var zoomLatLon = convertToLatLon(potentialNewCenter, zoom);
+				// zoom--;
+				// var zoomValues = zoomLatLon[0] + "," + zoomLatLon[1] + "," + zoom + "," + tileSize;
+				// console.log("zoom values");
+				// console.log(zoomValues);
+				//currentCenter = null;
+				// camera.position.y = 120000;
+				// controls.update();
+				// initiateMap(zoomValues);
+			// }
 			
 			tileMap.update(currentCenter, radius);               //Update gets called too early in above conditional!
 		}
@@ -232,6 +258,6 @@ function renderScene() {
 		if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
 		INTERSECTED = null;
 	}
-	
+
 	renderer.render( scene, camera );
 }
