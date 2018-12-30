@@ -11,6 +11,7 @@ import websockets
 import json
 import requests
 import math
+import threading
 
 init_scale = 1
 ##init_scale = 0.005
@@ -18,6 +19,7 @@ radius = 2
 tile_map = None
 filetype = "terrarium"
 size = 256
+index = 0
 
 ##Each server corresponds to a single zoom level
 zoom = 10
@@ -93,8 +95,23 @@ async def consumer_handler(websocket, path):
         new_tile.decode()
         jsonTile = {"Coordinates": new_tile.coordinates, "Data": new_tile.data}
         await websocket.send(json.dumps(jsonTile))
-        
-start_server = websockets.serve(consumer_handler, port=3010)
 
-asyncio.get_event_loop().run_until_complete(start_server)
-asyncio.get_event_loop().run_forever()
+def coordinator(loop):
+    asyncio.set_event_loop(loop)
+    start_server = websockets.serve(consumer_handler, port=3010)
+    asyncio.get_event_loop().run_until_complete(start_server)
+    asyncio.get_event_loop().run_forever()
+
+def test():
+    global index
+    while True:
+        index = index + 1
+    
+def main():
+    print("hello")
+    coordinator_loop = asyncio.new_event_loop()
+    threading.Thread(target=coordinator, args=(coordinator_loop,)).start()
+    threading.Thread(target=test).start()
+
+if __name__ == "__main__":
+    main()
