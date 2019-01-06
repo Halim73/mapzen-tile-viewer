@@ -100,47 +100,56 @@ function init() {
 
 function openfunc() {
 	ws.onmessage = function (event) {
+		console.log("got pinged");
 		var jsonTile = JSON.parse(event.data);
-		var tile = new Tile(jsonTile.Data, jsonTile.Coordinates, tileMap.zoom, worldWidth, worldDepth, scale);
-		console.log("adding tile");
-		console.log(tile);
-		//Initiate currentCenter
-		if(currentCenter == null) {
-			currentCenter = tile;
-			
-			if(!tileMap.contains(currentCenter.coordinates)) {
-				tileMap.addTile(tile);
-				tile.createGeometry();
-				var screenWidth = ((2 * radius) + 1) * currentCenter.geometry.parameters.width;
-				console.log("screen width");
-				console.log(screenWidth);
-				camera.position.y = screenWidth / (2 * Math.tan((Math.PI * camera.fov)/(180 * 2)));
-				console.log("the camera is at position: ");
-				console.log(camera.position.y);
-				tileMap.addNeighbors(tile);
-				tile.resolveSeems();
-				tile.createMesh()
-			}
-			var tileCoords = findTiles(currentCenter, radius);
-			for(var i = 0; i < tileCoords.length; i++) {
-				if(tileMap.contains(tileCoords[i])) {
-					console.log("map contains tile with coordinates: ");
-					console.log(tileCoords[i]);
-				}
-				else {
-					ws.send(tileCoords[i]);
-				}
-			}
+		
+		//Case in which tile has not been fetched or decoded -- query server again
+		if(jsonTile.Data == "Still fetching" || jsonTile.Data == "Still decoding") {
+			ws.send(jsonTile.Coordinates);
 		}
 		
-		if(!tileMap.contains(tile.coordinates)) {
-			tileMap.addTile(tile);
-			tile.createGeometry();
-			tile.geometry.computeBoundingBox();   //Improve raycaster performance
-			tileMap.addNeighbors(tile);
-			//tileMap.update(currentCenter, radius);
-			tile.resolveSeems();
-			tile.createMesh();
+		else {
+			var tile = new Tile(jsonTile.Data, jsonTile.Coordinates, tileMap.zoom, worldWidth, worldDepth, scale);
+			console.log("adding tile");
+			console.log(tile);
+			//Initiate currentCenter
+			if(currentCenter == null) {
+				currentCenter = tile;
+				
+				if(!tileMap.contains(currentCenter.coordinates)) {
+					tileMap.addTile(tile);
+					tile.createGeometry();
+					var screenWidth = ((2 * radius) + 1) * currentCenter.geometry.parameters.width;
+					console.log("screen width");
+					console.log(screenWidth);
+					camera.position.y = screenWidth / (2 * Math.tan((Math.PI * camera.fov)/(180 * 2)));
+					console.log("the camera is at position: ");
+					console.log(camera.position.y);
+					tileMap.addNeighbors(tile);
+					tile.resolveSeems();
+					tile.createMesh()
+				}
+				var tileCoords = findTiles(currentCenter, radius);
+				for(var i = 0; i < tileCoords.length; i++) {
+					if(tileMap.contains(tileCoords[i])) {
+						console.log("map contains tile with coordinates: ");
+						console.log(tileCoords[i]);
+					}
+					else {
+						ws.send(tileCoords[i]);
+					}
+				}
+			}
+			
+			if(!tileMap.contains(tile.coordinates)) {
+				tileMap.addTile(tile);
+				tile.createGeometry();
+				tile.geometry.computeBoundingBox();   //Improve raycaster performance
+				tileMap.addNeighbors(tile);
+				//tileMap.update(currentCenter, radius);
+				tile.resolveSeems();
+				tile.createMesh();
+			}
 		}
 		
 		setRenderer(renderer, container, stats);
