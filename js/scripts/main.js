@@ -61,7 +61,7 @@ function initiateMap(values) {
 		ws.send("User cancelled prompt");
 	} else {
 		container.innerHTML = "<br></br>Generating world..."
-		ws.send(origin);
+		ws.send(origin + ",False");
 		//camera.position.x = 0;
 		//camera.position.z = 0;
 	}
@@ -105,7 +105,7 @@ function openfunc() {
 		
 		//Case in which tile has not been fetched or decoded -- query server again
 		if(jsonTile.Data == "Still fetching" || jsonTile.Data == "Still decoding") {
-			ws.send(jsonTile.Coordinates);
+			ws.send(jsonTile.Coordinates + ",False");
 		}
 		
 		else {
@@ -136,7 +136,7 @@ function openfunc() {
 						console.log(tileCoords[i]);
 					}
 					else {
-						ws.send(tileCoords[i]);
+						ws.send(tileCoords[i] + ",False");
 					}
 				}
 			}
@@ -212,7 +212,10 @@ function renderScene() {
 				console.log(tileMap.map);
 				//Set intersected tile as new center
 				currentCenter = tileMap.get(potentialNewCenter);
-		
+				
+				//Alert server to change in center
+				ws.send(currentCenter.coordinates + ",True");
+				
 				//Remove tiles outside of view range
 				tileMap.update(currentCenter, radius);
 				
@@ -223,7 +226,7 @@ function renderScene() {
 					if(!tileMap.contains(tileCoords[i])) {
 						console.log("sending tile coordinates: ");
 						console.log(tileCoords[i]);
-						ws.send(tileCoords[i]);
+						ws.send(tileCoords[i] + ",False");
 					}
 				}
 			}
