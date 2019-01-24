@@ -22,6 +22,7 @@ var webSockets = initiateWebSockets();
 var currentCenter;
 var INTERSECTED;
 var firstRender = true;
+var buttonClicked = false;
 
 renderer = new THREE.WebGLRenderer();
 renderer.setPixelRatio( window.devicePixelRatio );
@@ -39,6 +40,7 @@ function onButtonClick() {
 }
 
 function initiateMap(values) {
+	buttonClicked = true;
 	var valueSplit = values.split(",");
 	zoom = valueSplit[2];
 	if(tileMap != null && tileMap.map != null) {
@@ -65,6 +67,7 @@ function initiateMap(values) {
 		//camera.position.x = 0;
 		//camera.position.z = 0;
 	}
+	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1/99, 100000000000000 );
 	if(controls) {
 		controls.dispose();
 	}
@@ -77,7 +80,7 @@ function init() {
 	console.log("initializing...");
 	container = document.getElementById( 'container' );
 
-	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1/99, 100000000000000 );
+	//camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1/99, 100000000000000 );
 	//camera.position.y = 120000; //12000;
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color( 0xbfd1e5 );
