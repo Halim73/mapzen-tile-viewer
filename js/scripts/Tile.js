@@ -113,13 +113,6 @@ class Tile {
 		var vertices = this.geometry.attributes.position.array;
 		var indicesRight = this.rightVertexIndices;
 		var indicesLeft = tile.leftVertexIndices;
-
-		if(indicesRight.length != indicesLeft.length) {
-			console.log('indicesRight length: ' + indicesRight.length);
-			console.log('indicesLeft length: ' + indicesLeft.length);
-			console.log("indicesRight not equal to indicesLeft for tile");
-			console.log(this);
-		}
 		
 		for(var i = 0; i < indicesRight.length; i++) {
 			var rightTileVertices = tile.geometry.attributes.position.array;
@@ -132,13 +125,6 @@ class Tile {
 		var indicesRight = tile.rightVertexIndices;
 		var indicesLeft = this.leftVertexIndices;
 
-		if(indicesRight.length != indicesLeft.length) {
-			console.log('indicesRight length: ' + indicesRight.length);
-			console.log('indicesLeft length: ' + indicesLeft.length);
-			console.log("indicesRight not equal to indicesLeft for tile");
-			console.log(this);
-		}
-
 		for(var i = 0; i < indicesLeft.length; i++) {
 			var leftTileVertices = tile.geometry.attributes.position.array;
 			vertices[indicesLeft[i]] = leftTileVertices[indicesRight[i]];
@@ -150,12 +136,6 @@ class Tile {
 		var indicesUp = this.upVertexIndices;
 		var indicesDown = tile.downVertexIndices;
 
-		if(indicesUp.length != indicesDown.length) {
-			console.log('indicesUp length: ' + indicesUp.length);
-			console.log('indicesDown length: ' + indicesDown.length);
-			console.log("indicesUp not equal to indicesDown for tile");
-			console.log(this);
-		}
 		for(var i = 0; i < indicesUp.length; i++) {
 			var upTileVertices = tile.geometry.attributes.position.array;
 			vertices[indicesUp[i]] = upTileVertices[indicesDown[i]];
@@ -167,12 +147,6 @@ class Tile {
 		var indicesUp = tile.upVertexIndices;
 		var indicesDown = this.downVertexIndices;
 
-		if(indicesUp.length != indicesDown.length) {
-			console.log('indicesUp length: ' + indicesUp.length);
-			console.log('indicesDown length: ' + indicesDown.length);
-			console.log("indicesUp not equal to indicesDown for tile");
-			console.log(this);
-		}
 		for(var i = 0; i < indicesDown.length; i++) {
 			var downTileVertices = tile.geometry.attributes.position.array;
 			vertices[indicesDown[i]] = downTileVertices[indicesUp[i]];
