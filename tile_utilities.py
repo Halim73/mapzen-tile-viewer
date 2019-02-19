@@ -1,13 +1,14 @@
 from PIL import Image
 from io import BytesIO
+from math import floor, log, cos, tan, pi
 import requests
 
 #Convert lat, lon, and zoom to Web Mercator coordinates
 def convert_to_coords(lat, lon, zoom):
     assert zoom >= 0 and zoom <= 20
     n = 2 ** zoom
-    x = int(math.floor(n * ((lon + 180) / 360)))
-    y = int(math.floor(n * (1 - (math.log(math.tan(lat * math.pi / 180) + (1 / math.cos(lat * math.pi / 180))) / math.pi)) / 2))
+    x = int(floor(n * ((lon + 180) / 360)))
+    y = int(floor(n * (1 - (log(tan(lat * pi / 180) + (1 / cos(lat * pi / 180))) / pi)) / 2))
     coords = [x, y]
     return coords
 

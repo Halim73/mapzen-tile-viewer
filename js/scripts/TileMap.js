@@ -1,8 +1,10 @@
 class TileMap {
-	constructor(zoom, origin) {
+	constructor(zoom, origin, radius) {
 		this.zoom = zoom;
 		this.origin = origin;
+		this.radius = radius;
 		this.map = [];
+		this.currentCenter = null;
 	}
 	
 	addTile(tile) {
@@ -10,13 +12,13 @@ class TileMap {
 	}
 	
 	//Removes old tiles no longer in frame
-	update(center, radius) {
+	update() {
 		//console.log("current center: ");
 		//console.log(center);'
 		for(var i = 0; i < this.map.length; i++) {
 			//console.log("testing tile: ");
 			//console.log(this.map[i]);
-			if(Math.abs(this.map[i].coordinates[0] - center.coordinates[0]) > radius || Math.abs(this.map[i].coordinates[1] - center.coordinates[1]) > radius) {
+			if(Math.abs(this.map[i].coordinates[0] - this.currentCenter.coordinates[0]) > this.radius || Math.abs(this.map[i].coordinates[1] - this.currentCenter.coordinates[1]) > this.radius) {
 				this.map[i].remove();
 				//console.log("removing tile: ");
 				//console.log(this.map[i]);

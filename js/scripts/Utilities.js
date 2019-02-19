@@ -40,3 +40,55 @@ function calculateGroundResolution(coordinates, zoom) {
 	var groundResolution = (Math.cos(convertToLatLon(coordinates, zoom)[0] * Math.PI/180) * 2 * Math.PI * 6378137) / (256 * Math.pow(2, zoom));
 	return groundResolution;
 }
+
+//Retrieve the vertex indices of the right side of tile
+function findRightVertexIndices(worldWidth, worldDepth) {
+	var rightIndices = [];
+	var numVertices = worldWidth * worldDepth * 3;
+	for(var i = 0, j = 0; i < numVertices; i++) {
+		if(i != 0 && i % (((worldWidth - 1) + (j * worldWidth)) * 3) == 0) {
+			rightIndices.push(i);
+			rightIndices.push(i + 1);
+			rightIndices.push(i + 2);
+			j++;
+		}
+	}
+	
+	return rightIndices;
+}
+
+//Retrieve the vertex indices of the left side of tile
+function findLeftVertexIndices(worldWidth, worldDepth) {
+	var numVertices = worldWidth * worldDepth * 3;
+	var leftIndices = [];
+	for(var i = 0; i < numVertices; i++) {
+		if(i % ((worldWidth) * 3) == 0) {
+			leftIndices.push(i);
+			leftIndices.push(i + 1);
+			leftIndices.push(i + 2);
+		}
+	}
+	
+	return leftIndices;
+}
+
+//Retrieve the vertex indices of the top of tile
+function findUpVertexIndices(worldWidth) {
+	var upIndices = [];
+	for(var i = 0; i < worldWidth * 3; i++) {
+		upIndices.push(i);
+	}
+	
+	return upIndices;
+}
+
+//Retrieve the vertex indices of the bottom of tile
+function findDownVertexIndices(worldWidth, worldDepth) {
+	var numVertices = worldWidth * worldDepth * 3;
+	var downIndices = [];
+	for(var i = worldWidth * (worldDepth - 1) * 3; i < numVertices; i++) {
+		downIndices.push(i);
+	}
+	
+	return downIndices;
+}

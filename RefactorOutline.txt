@@ -82,3 +82,10 @@ Server has a problem -> every time the center changes significantly enough, all 
 	Normally, this is fine, but consider the case in which the user has repeatedly entered a new destination, or has moved fast enough that the threads had not finished their task before the center changed
 		In this case, the old threads will continue working, thereby significantly slowing down performance.
 			To fix this problem, make sure to kill all worker threads whenever the pre-fetching center is changed on the server
+			
+			
+Java Server Refactor
+We get a new websocket for each connection, so pass this to client_handler containing worker threads for a given client.
+Recieved messages will update state of client handler (basically will update the tile_coordinates and counter for this connection, so that new tiles will be retrieved)
+
+Make counter increment and tile_coordinates access synchronized methods of the tile_map class

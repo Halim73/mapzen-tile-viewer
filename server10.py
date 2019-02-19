@@ -12,6 +12,7 @@ import stoppable_thread
 import tile
 import tile_map
 from threading import Lock
+from threading import Thread
 
 init_scale = 1
 ##init_scale = 0.005
@@ -28,7 +29,7 @@ identifier = 0
 ##Each server corresponds to a single zoom level
 zoom = 10
 connected = set()
-num_threads = 4
+num_threads = 5
         
 #Request Handler
 async def consumer_handler(websocket, path):
@@ -47,18 +48,19 @@ async def consumer_handler(websocket, path):
             print("starting threads")
             #Initiate pre-fetching threads
             for i in range(0, num_threads):
-                consumer_map.threads.append(stoppable_thread.StoppableThread(target=fetch_tiles_producer_consumer, args=(consumer_map, )))
+                consumer_map.threads.append(Thread(target=fetch_tiles_producer_consumer, args=(consumer_map, )))
                 consumer_map.threads[i].start()
             just_started = False
         if not consumer_map.current_center or is_center == "True":
             consumer_map.current_center = coordinates
         if not consumer_map.center or abs(consumer_map.center[0] - coordinates[0]) > (max_search_radius - radius) or abs(consumer_map.center[1] - coordinates[1]) > (max_search_radius - radius):
             consumer_map.center = consumer_map.current_center
-            consumer_map.reset_map()
-            consumer_map.reset_coordinates()
+            consumer_map.clear_coordinates()
             with mutex:
                 consumer_map.reset_counter()
+                consumer_map.reset_map(max_search_radius)
                 consumer_map.find_tiles_concentric(max_search_radius)
+                print(len(consumer_map.tile_coordinates))
             if consumer_map.center not in consumer_map.tile_map:
                 center_tile = tile.Tile(consumer_map.center, zoom, init_scale, filetype, size)
                 consumer_map.tile_map[consumer_map.center] = center_tile
