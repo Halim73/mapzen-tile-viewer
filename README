@@ -1,2 +1,5 @@
 View mapzen tiles using threejs and AWS server
-To view tiles, open index.html, and choose starting destination
+To view tiles, first navigate to mapzen-tile-viewer/server-app/src/main/java/org/java_websocket/server_app/
+Then, compile with command javac App.java
+Start server with command java App
+Finally, open index.html, and choose starting destination
