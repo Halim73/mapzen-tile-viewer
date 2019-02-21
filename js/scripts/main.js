@@ -26,6 +26,7 @@ var rightVertexIndices;
 var leftVertexIndices;
 var upVertexIndices;
 var downVertexIndices;
+var zoom;
 
 renderer = new THREE.WebGLRenderer();
 renderer.setPixelRatio( window.devicePixelRatio );
@@ -35,55 +36,20 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 init();
 
 function onButtonClick() {
-	var txt;
+	//Prompt user for initial location
 	var values = prompt("Please enter latitude, longitude, zoom, filetype, size: ", "");
 	initiateMap(values);
 }
 
-function initiateMap(values) {
-	var valueSplit = values.split(",");
-	zoom = valueSplit[2];
-	if(tileMap != null && tileMap.map != null) {
-		tileMap.deleteMap();
-	}
-	var origin = convertToCoordinates([parseFloat(valueSplit[0]), parseFloat(valueSplit[1])], zoom);
-	
-	//Create new tileMap at this zoom level centered at origin
-	tileMap = new TileMap(Number(zoom), origin, radius);
-	ws = webSockets.getItem(tileMap.zoom);
-	//Make current center tile with coordinates origin
-	// tileSize = valueSplit[4];
-	// screenWidth = (radius + 1) * tileSize * calculateGroundResolution(tileMap.origin, zoom);
-	// camera.position.y = screenWidth / (2 * Math.tan((Math.PI * camera.fov)/(180 * 2)));
-	//camera.position.y = 120000;
-	openfunc(ws, tileMap, stats, camera, controls, clock, raycaster, scene, radius, renderer, container);
-	
-	if (values == null || values == "") {
-		ws.send("User cancelled prompt");
-	} else {
-		container.innerHTML = "<br></br>Generating world..."
-		ws.send(origin + ",True");
-		//camera.position.x = 0;
-		//camera.position.z = 0;
-	}
-	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1/99, 100000000000000 );
-	if(controls) {
-		controls.dispose();
-	}
-	controls = new THREE.OrbitControls( camera, renderer.domElement );
-	controls.minPolarAngle = 0;
-	controls.maxPolarAngle = 0.2 * Math.PI;
-}
-
 function init() {
-	console.log("initializing...");
+	//Get document container
 	container = document.getElementById( 'container' );
 
-	//camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1/99, 100000000000000 );
-	//camera.position.y = 120000; //12000;
+	//Create scene
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color( 0xbfd1e5 );
 	
+	//Add lights
 	var ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 	scene.add(ambientLight);
 	
@@ -93,18 +59,51 @@ function init() {
 	var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
 	scene.add( directionalLight );
 
-	//controls = new THREE.OrbitControls( camera, renderer.domElement );
-	//controls.minPolarAngle = 0;
-	//controls.maxPolarAngle = 0.2 * Math.PI;
-
+	//Create raycaster
 	raycaster = new THREE.Raycaster();
 
+	//Compute locations of edge vertices in tile data arrays for seam resolving
 	rightVertexIndices = findRightVertexIndices(worldWidth, worldDepth);
-	console.log("Right vertex indices: ");
-	console.log(rightVertexIndices);
 	leftVertexIndices = findLeftVertexIndices(worldWidth, worldDepth);
 	upVertexIndices = findUpVertexIndices(worldWidth);
 	downVertexIndices = findDownVertexIndices(worldWidth, worldDepth);
+}
+
+function initiateMap(values) {
+	if(values === null || values === "") {
+		console.log("User cancelled prompt");
+	}
+	else {
+		//Set up camera and controls
+		camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1/99, 100000000000000 );
+		if(controls) {
+			controls.dispose();
+		}
+		controls = new THREE.OrbitControls( camera, renderer.domElement );
+		controls.minPolarAngle = 0;
+		controls.maxPolarAngle = 0.2 * Math.PI;
+
+		//User is entering a new destination -- delete tileMap
+		if(tileMap != null && tileMap.map != null) {
+			tileMap.deleteMap();
+		}
+
+		var userSpecs = getUserValues(values.split(","));
+		zoom = userSpecs.getItem("zoom");
+		var origin = convertToCoordinates([parseFloat(userSpecs.getItem("latitude")), parseFloat(userSpecs.getItem("longitude"))], zoom);
+		
+		//Create new tileMap at this zoom level centered at origin
+		tileMap = new TileMap(Number(zoom), origin, radius);
+
+		//Get webSocket corresponding to this zoom level
+		ws = webSockets.getItem(tileMap.zoom);
+
+		//Open connection to server
+		openfunc(ws, tileMap, stats, camera, controls, clock, raycaster, scene, radius, renderer, container);
+
+		//Send origin coordinates to server
+		ws.send(origin + ",True");
+	}
 }
 
 function openfunc() {
@@ -114,13 +113,13 @@ function openfunc() {
 		
 		//Case in which tile has not been fetched or decoded -- query server again
 		if(jsonTile.Data == "Still fetching" || jsonTile.Data == "Still decoding") {
+			//Do not mark tile as center, as this would cause unecessary center update on server <-- this update happened with first request
 			ws.send(jsonTile.Coordinates + ",False");
 		}
 		
 		else {
 			var tile = new Tile(jsonTile.Data, jsonTile.Coordinates, tileMap.zoom, worldWidth, worldDepth, scale, tileMap.origin, rightVertexIndices, leftVertexIndices, upVertexIndices, downVertexIndices);
-			console.log("adding tile");
-			console.log(tile);
+
 			//Initiate currentCenter
 			if(tileMap.currentCenter == null) {
 				tileMap.currentCenter = tile;

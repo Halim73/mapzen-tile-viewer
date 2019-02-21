@@ -92,3 +92,13 @@ function findDownVertexIndices(worldWidth, worldDepth) {
 	
 	return downIndices;
 }
+
+function getUserValues(values) {
+	var userSpecs = new HashTable({});
+	userSpecs.setItem("latitude", values[0]);
+	userSpecs.setItem("longitude", values[1]);
+	userSpecs.setItem("zoom", values[2]);
+	userSpecs.setItem("filetype", values[3]);
+	userSpecs.setItem("size", values[4]);
+	return userSpecs;
+}
