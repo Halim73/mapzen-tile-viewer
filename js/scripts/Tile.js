@@ -1,15 +1,24 @@
 class Tile {
-	constructor(data, coordinates, zoom, worldWidth, worldDepth, scale) {
+	constructor(data, coordinates, zoom, worldWidth, worldDepth, scale, origin, rightVertexIndices, leftVertexIndices, upVertexIndices, downVertexIndices) {
 		this.data = data;
 		this.coordinates = coordinates;
 		this.zoom = zoom;
 		this.worldWidth = worldWidth;
 		this.worldDepth = worldDepth;
 		this.scale = scale;
+		this.origin = origin;
 		this.geometry = null;
 		this.mesh = null;
 		this.texture = null;
 		this.neighbors = new HashTable({});
+		this.rightVertexIndices = rightVertexIndices;
+		this.leftVertexIndices = leftVertexIndices;
+		this.upVertexIndices = upVertexIndices;
+		this.downVertexIndices = downVertexIndices;
+		this.hasResolvedRight = false;
+		this.hasResolvedLeft = false;
+		this.hasResolvedUp = false;
+		this.hasResolvedDown = false;
 	}
 	
 	createGeometry() {
@@ -29,7 +38,7 @@ class Tile {
 		}
 		
 		//Translate tile relative to original center
-		this.geometry.translate((this.coordinates[0] - tileMap.origin[0]) * tileWidth, 0, (this.coordinates[1] - tileMap.origin[1]) * tileHeight);
+		this.geometry.translate((this.coordinates[0] - this.origin[0]) * tileWidth, 0, (this.coordinates[1] - this.origin[1]) * tileHeight);
 		
 		//Compute normals and apply texture
 		this.geometry.computeBoundingBox();   		//necessary?
@@ -51,6 +60,7 @@ class Tile {
 		this.mesh.userData = {coordinates: this.coordinates};
 	}
 	
+	//Add neighbor to neighbors set
 	addNeighbor(direction, neighbor) {
 		if(!(direction == "left" || direction == "right" || direction == "up" || direction == "down")) {
 			throw new Exception("Unsupported direction");
@@ -59,7 +69,7 @@ class Tile {
 		this.neighbors.setItem(direction, neighbor);
 	}
 	
-	//Determine if incoming tile is a a neighbor of this tile
+	//Determine direction of neighbor and add to set with appropriate key
 	checkNeighbor(tile) {
 		if(tile.coordinates[0] == this.coordinates[0] + 1 && tile.coordinates[1] == this.coordinates[1]) {
 			this.addNeighbor("right", tile);
@@ -79,17 +89,21 @@ class Tile {
 	resolveSeems() {
 		for (var k in this.neighbors.items) {
 			if (this.neighbors.hasItem(k)) {
-				if (k == "right") {
+				if (k == "right" && !this.neighbors.items[k].hasResolvedLeft) {
 					this.resolveSeemsRight(this.neighbors.items[k]);
+					this.hasResolvedRight = true;
 				}
-				else if (k == "left") {
+				else if (k == "left" && !this.neighbors.items[k].hasResolvedRight) {
 					this.resolveSeemsLeft(this.neighbors.items[k]);
+					this.hasResolvedLeft = true;
 				}
-				else if (k == "up") {
+				else if (k == "up" && !this.neighbors.items[k].hasResolvedDown) {
 					this.resolveSeemsUp(this.neighbors.items[k]);
+					this.hasResolvedUp = true;
 				}
-				else if(k == "down") {
+				else if(k == "down" && !this.neighbors.items[k].hasResolvedUp) {
 					this.resolveSeemsDown(this.neighbors.items[k]);
+					this.hasResolvedDown = true;
 				}
 			}
 		}
@@ -97,15 +111,8 @@ class Tile {
 	
 	resolveSeemsRight(tile) {
 		var vertices = this.geometry.attributes.position.array;
-		var indicesRight = this.rightVertexIndices();
-		var indicesLeft = tile.leftVertexIndices();
-
-		if(indicesRight.length != indicesLeft.length) {
-			console.log('indicesRight length: ' + indicesRight.length);
-			console.log('indicesLeft length: ' + indicesLeft.length);
-			console.log("indicesRight not equal to indicesLeft for tile");
-			console.log(this);
-		}
+		var indicesRight = this.rightVertexIndices;
+		var indicesLeft = tile.leftVertexIndices;
 		
 		for(var i = 0; i < indicesRight.length; i++) {
 			var rightTileVertices = tile.geometry.attributes.position.array;
@@ -115,15 +122,8 @@ class Tile {
 	
 	resolveSeemsLeft(tile) {
 		var vertices = this.geometry.attributes.position.array;
-		var indicesRight = tile.rightVertexIndices();
-		var indicesLeft = this.leftVertexIndices();
-
-		if(indicesRight.length != indicesLeft.length) {
-			console.log('indicesRight length: ' + indicesRight.length);
-			console.log('indicesLeft length: ' + indicesLeft.length);
-			console.log("indicesRight not equal to indicesLeft for tile");
-			console.log(this);
-		}
+		var indicesRight = tile.rightVertexIndices;
+		var indicesLeft = this.leftVertexIndices;
 
 		for(var i = 0; i < indicesLeft.length; i++) {
 			var leftTileVertices = tile.geometry.attributes.position.array;
@@ -133,15 +133,9 @@ class Tile {
 	
 	resolveSeemsUp(tile) {
 		var vertices = this.geometry.attributes.position.array;
-		var indicesUp = this.upVertexIndices();
-		var indicesDown = tile.downVertexIndices();
+		var indicesUp = this.upVertexIndices;
+		var indicesDown = tile.downVertexIndices;
 
-		if(indicesUp.length != indicesDown.length) {
-			console.log('indicesUp length: ' + indicesUp.length);
-			console.log('indicesDown length: ' + indicesDown.length);
-			console.log("indicesUp not equal to indicesDown for tile");
-			console.log(this);
-		}
 		for(var i = 0; i < indicesUp.length; i++) {
 			var upTileVertices = tile.geometry.attributes.position.array;
 			vertices[indicesUp[i]] = upTileVertices[indicesDown[i]];
@@ -150,71 +144,13 @@ class Tile {
 	
 	resolveSeemsDown(tile) {
 		var vertices = this.geometry.attributes.position.array;
-		var indicesUp = tile.upVertexIndices();
-		var indicesDown = this.downVertexIndices();
+		var indicesUp = tile.upVertexIndices;
+		var indicesDown = this.downVertexIndices;
 
-		if(indicesUp.length != indicesDown.length) {
-			console.log('indicesUp length: ' + indicesUp.length);
-			console.log('indicesDown length: ' + indicesDown.length);
-			console.log("indicesUp not equal to indicesDown for tile");
-			console.log(this);
-		}
 		for(var i = 0; i < indicesDown.length; i++) {
 			var downTileVertices = tile.geometry.attributes.position.array;
 			vertices[indicesDown[i]] = downTileVertices[indicesUp[i]];
 		}
-	}
-	
-	//Retrieve the vertex indices of the right side of tile
-	rightVertexIndices() {
-		var vertices = this.geometry.attributes.position.array;
-		var rightIndices = [];
-		for(var i = 0, j = 0; i < vertices.length; i++) {
-			if(i != 0 && i % (((worldWidth - 1) + (j * worldWidth)) * 3) == 0) {
-				rightIndices.push(i);
-				rightIndices.push(i + 1);
-				rightIndices.push(i + 2);
-				j++;
-			}
-		}
-		
-		return rightIndices;
-	}
-	
-	//Retrieve the vertex indices of the left side of tile
-	leftVertexIndices() {
-		var vertices = this.geometry.attributes.position.array;
-		var leftIndices = [];
-		for(var i = 0; i < vertices.length; i++) {
-			if(i % ((worldWidth) * 3) == 0) {
-				leftIndices.push(i);
-				leftIndices.push(i + 1);
-				leftIndices.push(i + 2);
-			}
-		}
-		
-		return leftIndices;
-	}
-	
-	//Retrieve the vertex indices of the top of tile
-	upVertexIndices() {
-		var upIndices = [];
-		for(var i = 0; i < worldWidth * 3; i++) {
-			upIndices.push(i);
-		}
-		
-		return upIndices;
-	}
-	
-	//Retrieve the vertex indices of the bottom of tile
-	downVertexIndices() {
-		var vertices = this.geometry.attributes.position.array;
-		var downIndices = [];
-		for(var i = worldWidth * (worldDepth - 1) * 3; i < vertices.length; i++) {
-			downIndices.push(i);
-		}
-		
-		return downIndices;
 	}
 	
 	remove() {

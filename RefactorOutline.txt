@@ -68,3 +68,24 @@ Need to fix: Camera does not return to origin when attempting to view a new loca
 		When Zooming or pressing button, ignore this functionality
 	One possible solution: set current center as origin of tileMap, and then translate all tiles relative to it
 		Won't work!
+		
+Currently, there is a lot of wasted communication between the client and server
+	Client sends all tiles around currentCenter to the server, regardless of whether or not it needs them
+		Revise code so that only those tiles that are needed are sent to the server
+	Note that, if only needed tiles are sent to the server, current center will never be sent
+		To fix this problem, just send the current center to the server every time it changes
+	How will the server know if a tile is the center?
+		Include a flag when sending the coordinates
+			Just make sure that if the flag is true, then this tile is not fetched, decoded, or sent back to the client
+			
+Server has a problem -> every time the center changes significantly enough, all of the prefetching threads are initiated again
+	Normally, this is fine, but consider the case in which the user has repeatedly entered a new destination, or has moved fast enough that the threads had not finished their task before the center changed
+		In this case, the old threads will continue working, thereby significantly slowing down performance.
+			To fix this problem, make sure to kill all worker threads whenever the pre-fetching center is changed on the server
+			
+			
+Java Server Refactor
+We get a new websocket for each connection, so pass this to client_handler containing worker threads for a given client.
+Recieved messages will update state of client handler (basically will update the tile_coordinates and counter for this connection, so that new tiles will be retrieved)
+
+Make counter increment and tile_coordinates access synchronized methods of the tile_map class
