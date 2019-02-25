@@ -27,6 +27,8 @@ var leftVertexIndices;
 var upVertexIndices;
 var downVertexIndices;
 var zoom;
+var mouse = new THREE.Vector2();
+var tileCoords = [];					//Coordinates to be fetched
 
 renderer = new THREE.WebGLRenderer();
 renderer.setPixelRatio( window.devicePixelRatio );
@@ -82,6 +84,7 @@ function initiateMap(values) {
 		controls = new THREE.OrbitControls( camera, renderer.domElement );
 		controls.minPolarAngle = 0;
 		controls.maxPolarAngle = 0.2 * Math.PI;
+		controls.panSpeed = 0.5;
 
 		//User is entering a new destination -- delete tileMap
 		if(tileMap != null && tileMap.map != null) {
@@ -101,8 +104,12 @@ function initiateMap(values) {
 		//Open connection to server
 		openfunc(ws, tileMap, stats, camera, controls, clock, raycaster, scene, radius, renderer, container);
 
-		//Send origin coordinates to server
-		ws.send(origin + ",True");
+		//Send origin coordinates to all servers
+		for(var loopZoom = 10; loopZoom <= 12; loopZoom++) {
+			console.log("made it here");
+			var otherOrigin = convertToCoordinates([parseFloat(userSpecs.getItem("latitude")), parseFloat(userSpecs.getItem("longitude"))], loopZoom);
+			webSockets.getItem(loopZoom).send(otherOrigin + ",True");
+		}
 	}
 }
 
@@ -112,49 +119,54 @@ function openfunc() {
 		var jsonTile = JSON.parse(event.data);
 		
 		//Case in which tile has not been fetched or decoded -- query server again
-		if(jsonTile.Data == "Still fetching" || jsonTile.Data == "Still decoding") {
-			//Do not mark tile as center, as this would cause unecessary center update on server <-- this update happened with first request
-			ws.send(jsonTile.Coordinates + ",False");
+		if(tileMap.currentCenter == null && jsonTile.Data == "Still fetching" || jsonTile.Data == "Still decoding") {
+			//Wait a while before sending follow-up request
+			setTimeout(function(){ws.send(jsonTile.Coordinates + ",False")}, 0);
+			//ws.send(jsonTile.Coordinates + ",False")
+		}
+
+		else if(tileMap.currentCenter != null && (Math.abs(tileMap.currentCenter.coordinates[0] - jsonTile.Coordinates[0]) <= radius ||
+			Math.abs(tileMap.currentCenter.coordinates[1] - jsonTile.Coordinates[1]) <= radius) &&
+			jsonTile.Data == "Still fetching" || jsonTile.Data == "Still decoding") {
+			setTimeout(function(){ws.send(jsonTile.Coordinates + ",False")}, 0);
 		}
 		
 		else {
 			var tile = new Tile(jsonTile.Data, jsonTile.Coordinates, tileMap.zoom, worldWidth, worldDepth, scale, tileMap.origin, rightVertexIndices, leftVertexIndices, upVertexIndices, downVertexIndices);
-
+			
 			//Initiate currentCenter
 			if(tileMap.currentCenter == null) {
 				tileMap.currentCenter = tile;
-				
+
+				//Add initial center to map
 				if(!tileMap.contains(tileMap.currentCenter.coordinates)) {
 					tileMap.addTile(tile);
 					tile.createGeometry();
-					var screenWidth = ((2 * radius) + 1) * tileMap.currentCenter.geometry.parameters.width;
-					console.log("screen width");
-					console.log(screenWidth);
+					
+					//Set screen width and camera position based on central tile dimensions
+					var screenWidth = ((2 * radius) + 1) * 256;
 					camera.position.y = screenWidth / (2 * Math.tan((Math.PI * camera.fov)/(180 * 2)));
-					console.log("the camera is at position: ");
-					console.log(camera.position.y);
+
 					tileMap.addNeighbors(tile);
 					tile.resolveSeems();
-					tile.createMesh()
+					tile.createMesh();
 				}
-				var tileCoords = findTiles(tileMap.currentCenter, radius);
-				for(var i = 0; i < tileCoords.length; i++) {
-					if(tileMap.contains(tileCoords[i])) {
-						console.log("map contains tile with coordinates: ");
-						console.log(tileCoords[i]);
-					}
-					else {
-						ws.send(tileCoords[i] + ",False");
-					}
-				}
+
+				//Retrieve tiles around initial center
+				tileCoords = findTiles(tileMap.currentCenter, radius);
+				// for(var i = 0; i < tileCoords.length; i++) {
+				// 	if(!tileMap.contains(tileCoords[i])) {
+				// 		ws.send(tileCoords[i] + ",False");
+				// 	}
+				// }
 			}
-			
-			if(!tileMap.contains(tile.coordinates)) {
+
+			//Default case
+			else if(!tileMap.contains(tile.coordinates)) {
 				tileMap.addTile(tile);
 				tile.createGeometry();
 				tile.geometry.computeBoundingBox();   //Improve raycaster performance
 				tileMap.addNeighbors(tile);
-				//tileMap.update(currentCenter, radius);
 				tile.resolveSeems();
 				tile.createMesh();
 			}
@@ -198,86 +210,97 @@ function animate() {
 function renderScene() {
 	controls.update(clock.getDelta());
 
-	raycaster.setFromCamera( new THREE.Vector2(), camera );  
+	//Remove tiles outside of view range
+	if(tileMap.map != null && tileMap.map.length > Math.pow((radius * 2) + 1, 2)) {
+		tileMap.update();   
+	}  
+
+	//Set raycaseter
+	raycaster.setFromCamera( mouse, camera );  
 	var intersects = raycaster.intersectObjects( scene.children );
+
 	if ( intersects.length > 0 ) {
-		if ( INTERSECTED != intersects[ 0 ].object ) {
+		//New tile intersected
+		if ( INTERSECTED != intersects[ 0 ].object || intersects[0].distance < 5 * INTERSECTED.geometry.boundingBox.max.y ||
+			intersects[0].distance > 50 * INTERSECTED.geometry.boundingBox.max.y) {
+			//Set color of intersected tile -- Purely for debugging, REMOVE LATER
 			if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
 			INTERSECTED = intersects[ 0 ].object; 
 			INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
 			INTERSECTED.material.emissive.setHex( 0xff0000 );
-	
-			console.log(INTERSECTED.geometry.boundingBox.max.y);
-			console.log(INTERSECTED.userData.coordinates);
-		}
-		
-		if(INTERSECTED != null) {
+
 			var potentialNewCenter = INTERSECTED.userData.coordinates;
-			if(!tileMap.currentCenter.equals(potentialNewCenter)) {
-				console.log("current center is being changed");
-				console.log("tileMap at this point: ");
-				console.log(tileMap.map);
-				//Set intersected tile as new center
-				tileMap.currentCenter = tileMap.get(potentialNewCenter);
-				
-				//Alert server to change in center
-				ws.send(tileMap.currentCenter.coordinates + ",True");
-				
-				console.log("Intersecting tile: " + tileMap.currentCenter.coordinates[0] + ", " + tileMap.currentCenter.coordinates[1]);
-				
-				//Remove tiles outside of view range
-				tileMap.update();
-				
-				//Add tiles within new view range
-				var tileCoords = findTiles(tileMap.currentCenter, radius);
-			
-				for(var i = 0; i < tileCoords.length; i++) {
-					if(!tileMap.contains(tileCoords[i])) {
-						console.log("sending tile coordinates: ");
-						console.log(tileCoords[i]);
-						ws.send(tileCoords[i] + ",False");
-					}
-				}
-			}
-			
-			if(intersects[0].distance < 5 * INTERSECTED.geometry.boundingBox.max.y) {
+
+			//User has scrolled to next zoom level
+			if(zoom <= 15 && intersects[0].distance < 500) {//5 * INTERSECTED.geometry.boundingBox.max.y) {
+				console.log("zooming in");
+				console.log("distance: " + intersects[0].distance);
+				//Clear tileMap and tileCoords
 				tileMap.deleteMap();
-				console.log("potential new center");
-				console.log(potentialNewCenter);
+				tileCoords = [];
 				var zoomLatLon = convertToLatLon(potentialNewCenter, zoom);
 				zoom++;
 				var zoomValues = zoomLatLon[0] + "," + zoomLatLon[1] + "," + zoom + "," + tileSize;
-				console.log("zoom values");
-				console.log(zoomValues);
 				//currentCenter = null;
-				camera.position.y = 120000;
+				camera.position.y = 10000;
 				controls.update();
 				initiateMap(zoomValues);
 			}
-			
-			// if(intersects[0].distance > 50 * INTERSECTED.geometry.boundingBox.max.y) {
-				// console.log("distance away");
-				// console.log(intersects[0].distance);
-				// tileMap.deleteMap();
-				// console.log("potential new center");
-				// console.log(potentialNewCenter);
-				// var zoomLatLon = convertToLatLon(potentialNewCenter, zoom);
-				// zoom--;
-				// var zoomValues = zoomLatLon[0] + "," + zoomLatLon[1] + "," + zoom + "," + tileSize;
-				// console.log("zoom values");
-				// console.log(zoomValues);
+
+			//User has scrolled to previous zoom level
+			else if(zoom >= 0 && intersects[0].distance > 5000) { //1000 * INTERSECTED.geometry.boundingBox.max.y) {
+				console.log("zooming out");
+				console.log("distance " + intersects[0].distance);
+				//console.log("distance away");
+				//console.log(intersects[0].distance);
+				tileMap.deleteMap();
+				//console.log("potential new center");
+				//console.log(potentialNewCenter);
+				var zoomLatLon = convertToLatLon(potentialNewCenter, zoom);
+				zoom--;
+				var zoomValues = zoomLatLon[0] + "," + zoomLatLon[1] + "," + zoom + "," + tileSize;
+				//console.log("zoom values");
+				//console.log(zoomValues);
 				//currentCenter = null;
-				// camera.position.y = 120000;
-				// controls.update();
-				// initiateMap(zoomValues);
-			// }
-			
-			tileMap.update();               //Update gets called too early in above conditional!
+				camera.position.y = 10000;
+				controls.update();
+				initiateMap(zoomValues);
+			}
+
+			//User has moved from current center
+			else if(!tileMap.currentCenter.equals(potentialNewCenter)) {
+				//Set intersected tile as new center
+				tileMap.currentCenter = tileMap.get(potentialNewCenter);
+				
+				//Alert all servers to change in center
+				var currentCenterLatLon = convertToLatLon(tileMap.currentCenter.coordinates, zoom);
+				console.log("current center lat lon");
+				console.log(currentCenterLatLon);
+				for(var loopZoom = 10; loopZoom <= 12; loopZoom++) {
+					var otherCenter = convertToCoordinates([currentCenterLatLon[0], currentCenterLatLon[1]], loopZoom);
+					console.log("sending: " + otherCenter[0] + "," + otherCenter[1]);
+					webSockets.getItem(loopZoom).send(otherCenter + ",True");
+				}
+
+				//Add tiles within new view range
+				tileCoords = findTiles(tileMap.currentCenter, radius);
+			}      
 		}
-	} 
+	}
+
+	//Nothing intersected 
 	else {
 		if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
 		INTERSECTED = null;
+	}
+
+	//Send a coordinate to server
+	if(tileCoords.length > 0) {
+		var coordinate = tileCoords.pop();
+		if(!tileMap.contains(coordinate)) {
+			console.log("Tile map length: " + tileMap.map.length);
+			ws.send(coordinate + ",False");
+		}
 	}
 
 	renderer.render( scene, camera );

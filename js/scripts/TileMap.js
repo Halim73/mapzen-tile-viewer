@@ -13,10 +13,13 @@ class TileMap {
 	
 	//Removes old tiles no longer in frame
 	update() {
-		for(var i in this.map.items) {
-			if(Math.abs(this.map.getItem(i).coordinates[0] - this.currentCenter.coordinates[0]) > this.radius || Math.abs(this.map.getItem(i).coordinates[1] - this.currentCenter.coordinates[1]) > this.radius) {
-				this.map.getItem(i).remove();
-				this.map.removeItem(i);
+		if(this.map.length != 0) {
+			console.log("performing update");
+			for(var i in this.map.items) {
+				if(Math.abs(this.map.getItem(i).coordinates[0] - this.currentCenter.coordinates[0]) > this.radius || Math.abs(this.map.getItem(i).coordinates[1] - this.currentCenter.coordinates[1]) > this.radius) {
+					this.map.getItem(i).remove();
+					this.map.removeItem(i);
+				}
 			}
 		}
 	}
