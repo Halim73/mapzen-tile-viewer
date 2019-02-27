@@ -24,8 +24,8 @@ class Tile {
 	createGeometry() {
 		//Define parameters of geometry
 		var groundResolution = calculateGroundResolution(this.coordinates, this.zoom);
-		var tileWidth = groundResolution * this.worldWidth * this.scale;
-		var tileHeight = groundResolution * this.worldDepth * this.scale;
+		var tileWidth = this.worldWidth * this.scale;
+		var tileHeight = this.worldDepth * this.scale;
 
 		//Create geometry and rotate to face camera
 		this.geometry = new THREE.PlaneBufferGeometry(tileWidth, tileHeight, worldWidth - 1, worldDepth - 1);
@@ -34,7 +34,7 @@ class Tile {
 		//Update geometry vertices with elevation data as y values
 		var vertices = this.geometry.attributes.position.array;
 		for ( var i = 0, j = 0, l = vertices.length; i < l; i ++, j += 3) {
-			vertices[j + 1] = this.data[ i ];
+			vertices[j + 1] = this.data[ i ] / groundResolution;
 		}
 		
 		//Translate tile relative to original center
