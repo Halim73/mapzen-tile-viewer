@@ -105,7 +105,7 @@ function initiateMap(values) {
 		openfunc(ws, tileMap, stats, camera, controls, clock, raycaster, scene, radius, renderer, container);
 
 		//Send origin coordinates to all servers
-		for(var loopZoom = 10; loopZoom <= 12; loopZoom++) {
+		for(var loopZoom = 0; loopZoom <= 15; loopZoom++) {
 			console.log("made it here");
 			var otherOrigin = convertToCoordinates([parseFloat(userSpecs.getItem("latitude")), parseFloat(userSpecs.getItem("longitude"))], loopZoom);
 			webSockets.getItem(loopZoom).send(otherOrigin + ",True");
@@ -276,7 +276,7 @@ function renderScene() {
 				var currentCenterLatLon = convertToLatLon(tileMap.currentCenter.coordinates, zoom);
 				console.log("current center lat lon");
 				console.log(currentCenterLatLon);
-				for(var loopZoom = 10; loopZoom <= 12; loopZoom++) {
+				for(var loopZoom = 0; loopZoom <= 15; loopZoom++) {
 					var otherCenter = convertToCoordinates([currentCenterLatLon[0], currentCenterLatLon[1]], loopZoom);
 					console.log("sending: " + otherCenter[0] + "," + otherCenter[1]);
 					webSockets.getItem(loopZoom).send(otherCenter + ",True");
