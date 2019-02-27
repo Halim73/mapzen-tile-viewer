@@ -1,5 +1,16 @@
 View mapzen tiles using threejs and AWS server
-To view tiles, first navigate to mapzen-tile-viewer/server-app/src/main/java/org/java_websocket/server_app/
-Then, compile with command javac App.java
-Start server with command java App
-Finally, open index.html, and choose starting destination
+To view tiles, ssh into EC2 at desired zoom level
+  To determine the EC2 machine, examine initiateWebSockets in Utilities.js
+    This function creates a hashtable mapping zoom level to EC2 IP address, so just find the EC2 machine with IP corresponding to desired zoom
+After ssh, run command:
+  java -jar myserver.jar <port> <zoom> <numberWorkerThreads> <prefetchingRadius> <displayRadius>
+  The port should be 3000 + zoom (for example, zoom level 10 would be on port 3010)
+Example command:
+  java -jar myserver.jar 3010 10 4 8 3
+    Starts zoom level 10 server with 4 worker threads, a prefetching radius of 8, and a display radius of 3
+Once server is running, open index.html and choose starting destination
+  Format for starting destination: latitude,longitude,zoom,filetype,size
+  Example: 36.056595,-112.125092,10,terrarium,256   <--   View Grand Canyon at zoom 10
+  Currently terrarium is only supported filetype
+  Size can be 256 or 512
+Please stop any running EC2 machines when finished!
