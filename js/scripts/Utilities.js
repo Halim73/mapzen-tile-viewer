@@ -29,22 +29,22 @@ function findTiles(center, radius) {
 
 function initiateWebSockets() {
 	var webSockets = new HashTable({});
-	webSockets.setItem(0, new WebSocket("ws://35.160.124.235:" + String(3000) + "/"));
-	webSockets.setItem(1, new WebSocket("ws://34.217.52.13:" + String(3001) + "/"));
-	webSockets.setItem(2, new WebSocket("ws://54.213.32.30:" + String(3002) + "/"));
-	webSockets.setItem(3, new WebSocket("ws://54.190.161.169:" + String(3003) + "/"));
-	webSockets.setItem(4, new WebSocket("ws://52.38.191.75:" + String(3004) + "/"));
-	webSockets.setItem(5, new WebSocket("ws://54.213.93.59:" + String(3005) + "/"));
-	webSockets.setItem(6, new WebSocket("ws://54.218.55.179:" + String(3006) + "/"));
-	webSockets.setItem(7, new WebSocket("ws://54.244.144.103:" + String(3007) + "/"));
-	webSockets.setItem(8, new WebSocket("ws://34.219.250.102:" + String(3008) + "/"));
-	webSockets.setItem(9, new WebSocket("ws://54.245.168.94:" + String(3009) + "/"));
-	webSockets.setItem(10, new WebSocket("ws://54.187.126.61:" + String(3010) + "/"));
-	webSockets.setItem(11, new WebSocket("ws://54.212.228.248:" + String(3011) + "/"));
-	webSockets.setItem(12, new WebSocket("ws://34.220.191.27:" + String(3012) + "/"));
-	webSockets.setItem(13, new WebSocket("ws://52.24.222.164:" + String(3013) + "/"));
-	webSockets.setItem(14, new WebSocket("ws://34.222.4.183:" + String(3014) + "/"));
-	webSockets.setItem(15, new WebSocket("ws://34.211.7.120:" + String(3015) + "/"));
+	//webSockets.setItem(0, new WebSocket("ws://54.245.3.233:" + String(3000) + "/"));
+	// webSockets.setItem(1, new WebSocket("ws://54.245.3.233:" + String(3001) + "/"));
+	// webSockets.setItem(2, new WebSocket("ws://54.190.44.187:" + String(3002) + "/"));
+	// webSockets.setItem(3, new WebSocket("ws://52.33.201.238:" + String(3003) + "/"));
+	// webSockets.setItem(4, new WebSocket("ws://54.213.222.165:" + String(3004) + "/"));
+	// webSockets.setItem(5, new WebSocket("ws://54.202.84.132:" + String(3005) + "/"));
+	// webSockets.setItem(6, new WebSocket("ws://52.35.191.0:" + String(3006) + "/"));
+	// webSockets.setItem(7, new WebSocket("ws://34.219.68.81:" + String(3007) + "/"));
+	// webSockets.setItem(8, new WebSocket("ws://34.222.160.48:" + String(3008) + "/"));
+	// webSockets.setItem(9, new WebSocket("ws://54.200.243.5:" + String(3009) + "/"));
+	webSockets.setItem(10, new WebSocket("ws://34.219.125.204:" + String(3010) + "/"));
+	webSockets.setItem(11, new WebSocket("ws://54.188.31.36:" + String(3011) + "/"));
+	webSockets.setItem(12, new WebSocket("ws://35.164.113.213:" + String(3012) + "/"));
+	webSockets.setItem(13, new WebSocket("ws://34.222.135.248:" + String(3013) + "/"));
+	webSockets.setItem(14, new WebSocket("ws://34.217.75.17:" + String(3014) + "/"));
+	webSockets.setItem(15, new WebSocket("ws://54.186.95.97:" + String(3015) + "/"));
 
 	// for(var i = 0; i < 16; i++) {
 	// 	var ws = new WebSocket("ws://54.184.2.148:" + String(3000 + i) + "/");
