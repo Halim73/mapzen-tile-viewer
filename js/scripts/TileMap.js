@@ -26,9 +26,28 @@ class TileMap {
 	
 	//Check for neighbors in the map
 	addNeighbors(tile) {
-		for(var i in this.map.items) {
-			tile.checkNeighbor(this.map.getItem(i));
+		// console.log("thingfish");
+		// console.log([tile.coordinates[0] - 1, tile.coordinates[0]]);
+		// console.log(this.map.getItem([tile.coordinates[0] - 1, tile.coordinates[0]]));
+		if(this.map.getItem([tile.coordinates[0] - 1, tile.coordinates[1]]) != undefined) {
+			console.log("adding left neighbor");
+			tile.addNeighbor("left", this.map.getItem([tile.coordinates[0] - 1, tile.coordinates[1]]));
 		}
+		if(this.map.getItem([tile.coordinates[0] + 1, tile.coordinates[1]]) != undefined) {
+			console.log("adding right neighbor");
+			tile.addNeighbor("right", this.map.getItem([tile.coordinates[0] + 1, tile.coordinates[1]]));
+		}
+		if(this.map.getItem([tile.coordinates[0], tile.coordinates[1] - 1]) != undefined) {
+			console.log("adding up neighbor");
+			tile.addNeighbor("up", this.map.getItem([tile.coordinates[0], tile.coordinates[1] - 1]));
+		}
+		if(this.map.getItem([tile.coordinates[0], tile.coordinates[1] + 1]) != undefined) {
+			console.log("adding down neighbor");
+			tile.addNeighbor("down", this.map.getItem([tile.coordinates[0], tile.coordinates[1] + 1]));
+		}
+		// for(var i in tile.neighbors.items) {
+		// 	console.log(tile.neighbors[i]);
+		// }
 	}
 	
 	//delete all tiles in map

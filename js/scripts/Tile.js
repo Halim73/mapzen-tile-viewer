@@ -70,20 +70,20 @@ class Tile {
 	}
 	
 	//Determine direction of neighbor and add to set with appropriate key
-	checkNeighbor(tile) {
-		if(tile.coordinates[0] == this.coordinates[0] + 1 && tile.coordinates[1] == this.coordinates[1]) {
-			this.addNeighbor("right", tile);
-		}
-		else if (tile.coordinates[0] == this.coordinates[0] - 1 && tile.coordinates[1] == this.coordinates[1]) {
-			this.addNeighbor("left", tile);
-		}
-		else if (tile.coordinates[0] == this.coordinates[0] && tile.coordinates[1] == this.coordinates[1] - 1) {
-			this.addNeighbor("up", tile);
-		}
-		else if (tile.coordinates[0] == this.coordinates[0] && tile.coordinates[1] == this.coordinates[1] + 1) {
-			this.addNeighbor("down", tile);
-		}
-	}
+	// checkNeighbor(tile) {
+	// 	if(tile.coordinates[0] == this.coordinates[0] + 1 && tile.coordinates[1] == this.coordinates[1]) {
+	// 		this.addNeighbor("right", tile);
+	// 	}
+	// 	else if (tile.coordinates[0] == this.coordinates[0] - 1 && tile.coordinates[1] == this.coordinates[1]) {
+	// 		this.addNeighbor("left", tile);
+	// 	}
+	// 	else if (tile.coordinates[0] == this.coordinates[0] && tile.coordinates[1] == this.coordinates[1] - 1) {
+	// 		this.addNeighbor("up", tile);
+	// 	}
+	// 	else if (tile.coordinates[0] == this.coordinates[0] && tile.coordinates[1] == this.coordinates[1] + 1) {
+	// 		this.addNeighbor("down", tile);
+	// 	}
+	// }
 	
 	//Resolve seems between this tile and its neighbors
 	resolveSeems() {
