@@ -14,14 +14,24 @@ function convertToLatLon(coordinates, zoom) {
 	return latLong;
 }
 
-function findTiles(center, radius) {
+function findTiles(tileMap, radius) {
+	console.log("called");
+	var center = tileMap.currentCenter;
 	var tileCoords = [];
-	
-	var leftCornerCoords = [(center.coordinates[0] - radius), (center.coordinates[1] - radius)];
-	for(var i = 0; i < (2 * radius) + 1; i++) {
-		for(var j = 0; j < (2 * radius) + 1; j++) {
-			var coords = [(leftCornerCoords[0] + i), (leftCornerCoords[1] + j)];
-			tileCoords.push(coords);
+
+	for(var i = 1; i <= radius; i++) {
+		for(var j = center.coordinates[0] - i; j <= center.coordinates[0] + i; j++) {
+			for(var k = center.coordinates[1] - i; k <= center.coordinates[1] + i; k++){
+				var coordinate = [j, k];
+				if ((Math.abs(coordinate[0] - center.coordinates[0]) == i && 
+						Math.abs(coordinate[1] - center.coordinates[1]) <= i) || 
+						(Math.abs(coordinate[1] - center.coordinates[1]) == i && 
+						Math.abs(coordinate[0] - center.coordinates[0]) <= i)) {
+					if(!(tileMap.contains(coordinate))) {
+						tileCoords.push(coordinate);
+					}
+				}
+			}
 		}
 	}
 	return tileCoords;
@@ -39,7 +49,7 @@ function initiateWebSockets() {
 	// webSockets.setItem(7, new WebSocket("ws://34.219.68.81:" + String(3007) + "/"));
 	// webSockets.setItem(8, new WebSocket("ws://34.222.160.48:" + String(3008) + "/"));
 	// webSockets.setItem(9, new WebSocket("ws://54.200.243.5:" + String(3009) + "/"));
-	webSockets.setItem(10, new WebSocket("ws://34.219.125.204:" + String(3010) + "/"));
+	webSockets.setItem(10, new WebSocket("ws://35.165.136.171:" + String(3010) + "/"));
 	webSockets.setItem(11, new WebSocket("ws://54.188.31.36:" + String(3011) + "/"));
 	webSockets.setItem(12, new WebSocket("ws://35.164.113.213:" + String(3012) + "/"));
 	webSockets.setItem(13, new WebSocket("ws://34.222.135.248:" + String(3013) + "/"));
