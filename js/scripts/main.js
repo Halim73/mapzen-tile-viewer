@@ -16,7 +16,7 @@ worldHalfWidth = worldWidth / 2, worldHalfDepth = worldDepth / 2;
 var type = "terrarium";
 var scale = 1;
 var clock = new THREE.Clock();
-var radius = 3;
+var radius = 4;
 var tileMap;
 var webSockets = initiateWebSockets();
 var currentCenter;
@@ -145,7 +145,12 @@ function openfunc() {
 					
 					//Set screen width and camera position based on central tile dimensions
 					var screenWidth = ((2 * radius) + 1) * 256;
-					camera.position.y = screenWidth / (2 * Math.tan((Math.PI * camera.fov)/(180 * 2)));
+					if(zoom < 13) {
+						camera.position.y = screenWidth / (2 * Math.tan((Math.PI * camera.fov)/(180 * 2)));
+					}
+					else {
+						camera.position.y = screenWidth / (2 * Math.tan((Math.PI * camera.fov)/(180 * 2))) + 5000;
+					}
 
 					tileMap.addNeighbors(tile);
 					tile.resolveSeems();
@@ -153,7 +158,7 @@ function openfunc() {
 				}
 
 				//Retrieve tiles around initial center
-				tileCoords = findTiles(tileMap.currentCenter, radius);
+				tileCoords = findTiles(tileMap, radius);
 				// for(var i = 0; i < tileCoords.length; i++) {
 				// 	if(!tileMap.contains(tileCoords[i])) {
 				// 		ws.send(tileCoords[i] + ",False");
@@ -232,7 +237,7 @@ function renderScene() {
 			var potentialNewCenter = INTERSECTED.userData.coordinates;
 
 			//User has scrolled to next zoom level
-			if(zoom <= 15 && intersects[0].distance < 500) {//5 * INTERSECTED.geometry.boundingBox.max.y) {
+			if(zoom < 15 && intersects[0].distance < 500) {//5 * INTERSECTED.geometry.boundingBox.max.y) {
 				console.log("zooming in");
 				console.log("distance: " + intersects[0].distance);
 				//Clear tileMap and tileCoords
@@ -248,7 +253,7 @@ function renderScene() {
 			}
 
 			//User has scrolled to previous zoom level
-			else if(zoom >= 0 && intersects[0].distance > 5000) { //1000 * INTERSECTED.geometry.boundingBox.max.y) {
+			else if(zoom > 10 && intersects[0].distance > 5000) { //1000 * INTERSECTED.geometry.boundingBox.max.y) {
 				console.log("zooming out");
 				console.log("distance " + intersects[0].distance);
 				//console.log("distance away");
@@ -268,7 +273,8 @@ function renderScene() {
 			}
 
 			//User has moved from current center
-			else if(!tileMap.currentCenter.equals(potentialNewCenter)) {
+			else if(Math.abs(tileMap.currentCenter.coordinates[0] - potentialNewCenter[0]) >= radius - 1 || 
+				Math.abs(tileMap.currentCenter.coordinates[1] - potentialNewCenter[1]) >= radius - 1) {
 				//Set intersected tile as new center
 				tileMap.currentCenter = tileMap.get(potentialNewCenter);
 				
@@ -283,7 +289,7 @@ function renderScene() {
 				}
 
 				//Add tiles within new view range
-				tileCoords = findTiles(tileMap.currentCenter, radius);
+				tileCoords = findTiles(tileMap, radius);
 			}      
 		}
 	}
@@ -296,7 +302,7 @@ function renderScene() {
 
 	//Send a coordinate to server
 	if(tileCoords.length > 0) {
-		var coordinate = tileCoords.pop();
+		var coordinate = tileCoords.shift();
 		if(!tileMap.contains(coordinate)) {
 			console.log("Tile map length: " + tileMap.map.length);
 			ws.send(coordinate + ",False");
