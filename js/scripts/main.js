@@ -16,7 +16,7 @@ worldHalfWidth = worldWidth / 2, worldHalfDepth = worldDepth / 2;
 var type = "terrarium";
 var scale = 1;
 var clock = new THREE.Clock();
-var radius = 2;
+var radius = 3;
 var tileMap;
 var webSockets = initiateWebSockets();
 var currentCenter;
@@ -123,12 +123,14 @@ function openfunc() {
 			//Wait a while before sending follow-up request
 			setTimeout(function(){ws.send(jsonTile.Coordinates + ",False")}, 0);
 			//ws.send(jsonTile.Coordinates + ",False")
+			console.log("still fetching");
 		}
 
 		else if(tileMap.currentCenter != null && (Math.abs(tileMap.currentCenter.coordinates[0] - jsonTile.Coordinates[0]) <= radius ||
 			Math.abs(tileMap.currentCenter.coordinates[1] - jsonTile.Coordinates[1]) <= radius) &&
 			jsonTile.Data == "Still fetching" || jsonTile.Data == "Still decoding") {
 			setTimeout(function(){ws.send(jsonTile.Coordinates + ",False")}, 0);
+			console.log("still fetching");
 		}
 		
 		else {
@@ -229,10 +231,10 @@ function renderScene() {
 		if ( INTERSECTED != intersects[ 0 ].object || intersects[0].distance < 5 * INTERSECTED.geometry.boundingBox.max.y ||
 			intersects[0].distance > 50 * INTERSECTED.geometry.boundingBox.max.y) {
 			//Set color of intersected tile -- Purely for debugging, REMOVE LATER
-			if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+			//if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
 			INTERSECTED = intersects[ 0 ].object; 
-			INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
-			INTERSECTED.material.emissive.setHex( 0xff0000 );
+			//INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+			//INTERSECTED.material.emissive.setHex( 0xff0000 );
 
 			var potentialNewCenter = INTERSECTED.userData.coordinates;
 
@@ -297,7 +299,7 @@ function renderScene() {
 
 	//Nothing intersected 
 	else {
-		if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+		//if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
 		INTERSECTED = null;
 	}
 
