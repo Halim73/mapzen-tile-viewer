@@ -1,0 +1,26 @@
+Within Prefetch Test
+    1.) Create requests and place them in a list.
+        i.) Create a request for the center tile with isCenter set to true.
+        ii.) Create requests for the neighbors of the center tile with isCenter set to false.
+                The neighbors consist of tiles that are within the view radius in all directions.
+    2.) Assign those requests to the appropriate zoom in this case zoom 10
+    3.) Begin the sending sequence
+        i.) Send the first request
+        ii.) If the message is decoded send the next message given the request queue is not empty
+        iii.) If the request queue is empty the zoom will set a flag that it has finished its task
+
+Outside Prefetch Test
+    1.) Create requests and place them in a list.
+        i.) Create a request for the center tile with isCenter set to true.
+        ii.) Subsequent requests are made for tiles that are (r+2) tiles away from the current center in the positive
+                x and y directions.
+    2.) Assign those requests to the appropriate zoom in this case zoom 10
+    3.) Begin the sending sequence
+        i.) Send the first request
+        ii.) If the message is decoded send the next message given the request queue is not empty
+        iii.) If the request queue is empty the zoom will set a flag that it has finished its task
+
+
+
+Multiple clients are tested by running the above tests within there own threads for each client and compiling the results
+after their termination.

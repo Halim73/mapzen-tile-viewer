@@ -10,33 +10,41 @@ public class Client {
 	private CoordinateQueue coordinateQueue;
 	private WebSocket connection;
 	private int maxSearchRadius;
+	private int clientSearchRadius;
 	private ArrayList<Integer> currentPrefetchingCenter;
-	private ArrayList<Integer> potentialNewCenter;
+	//private ArrayList<Integer> potentialNewCenter;
 	
-	public Client(WebSocket connection, int maxSearchRadius, CoordinateQueue coordinateQueue) {
+	public Client(WebSocket connection, int maxSearchRadius, int clientSearchRadius, CoordinateQueue coordinateQueue) {
 		this.connection = connection;
 		this.maxSearchRadius = maxSearchRadius;
+		this.clientSearchRadius = clientSearchRadius;
 		this.tileMap = new TileMap();
 		this.coordinateQueue = coordinateQueue;
 		this.currentPrefetchingCenter = new ArrayList<Integer>();
-		this.potentialNewCenter = new ArrayList<Integer>();
+		//this.potentialNewCenter = new ArrayList<Integer>();
 	}
 	
 	public void updateTileMap(ArrayList<Integer> requestedTileCoordinates, boolean isCenter) {
 		//Determine if requested tile is intersected by client ray caster
-		if(this.potentialNewCenter.isEmpty() || isCenter) {
-			updatePotentialNewPrefetchingCenter(requestedTileCoordinates);
-		}
+//		if(this.potentialNewCenter.isEmpty() || isCenter) {
+//			updatePotentialNewPrefetchingCenter(requestedTileCoordinates);
+//		}
 
 		//Determine if potentialNewCenter is far enough away from currentPrefetching center to warrant reassignment
-		if(this.currentPrefetchingCenter.isEmpty() ||
-				Math.abs(this.currentPrefetchingCenter.get(0) - requestedTileCoordinates.get(0)) >= this.maxSearchRadius || 
-				Math.abs(this.currentPrefetchingCenter.get(1) - requestedTileCoordinates.get(1)) >= this.maxSearchRadius) {
+		if(this.currentPrefetchingCenter.isEmpty() || isCenter && (
+				Math.abs(this.currentPrefetchingCenter.get(0) - requestedTileCoordinates.get(0)) >= this.maxSearchRadius - this.clientSearchRadius || 
+				Math.abs(this.currentPrefetchingCenter.get(1) - requestedTileCoordinates.get(1)) >= this.maxSearchRadius - this.clientSearchRadius)) {
 			//Set new pre-fetching center and find pre-fetching coordinates
 			System.out.println("Updating Center");
+			
 			/*PROBLEM HERE: HOW CAN WE GUARANTEE THAT THIS HAS ALREADY HAPPENED BEFORE NEW REQUEST IS RECEIVED?*/
-			updateCurrentPrefetchingCenter(this.potentialNewCenter);
-			this.coordinateQueue.clearQueue();
+			updateCurrentPrefetchingCenter(requestedTileCoordinates);
+			
+			System.out.println("Current center: [" + this.currentPrefetchingCenter.get(0) + ", " + this.currentPrefetchingCenter.get(1) + "]");
+			System.out.println("Requested tile: [" + requestedTileCoordinates.get(0) + ", " + requestedTileCoordinates.get(1) + "]");
+			
+			//Remove all tiles in coordinate queue belonging to this client
+			this.coordinateQueue.clearQueue(this.connection);
 			
 			//CAUSING CONCURRENT MODIFICATION ERROR - WHY?!!!!!
 			this.tileMap.resetMap(this.currentPrefetchingCenter, this.maxSearchRadius);
@@ -50,9 +58,10 @@ public class Client {
 		}
 	}
 	
-	public JSONObject getRequestedTile(ArrayList<Integer> requestedTileCoordinates) {
+	public JSONObject getRequestedTile(ArrayList<Integer> requestedTileCoordinates, boolean isCenter) {
 		JSONObject response = new JSONObject();
 		response.put("Coordinates", requestedTileCoordinates);
+		response.put("isCenter", isCenter);
 		
 		//System.out.println("Size of tileMap " + this.tileMap.getSize());
 		ArrayList<Integer> test = new ArrayList<Integer>();
@@ -80,9 +89,9 @@ public class Client {
 	
 	//Update the current potential new pre-fetching center coordinates
 	//PROBABLY DOESN'T NEED TO BE SYNCHRONIZED, BECAUSE WORKER THREADS SHOULDN'T HAVE ANYTHING TO DO WITH THE CENTER OF A GIVEN CLIENT
-	public synchronized void updatePotentialNewPrefetchingCenter(ArrayList<Integer> newPotentialPrefetchingCenter) {
-		this.potentialNewCenter = newPotentialPrefetchingCenter;
-	}
+//	public synchronized void updatePotentialNewPrefetchingCenter(ArrayList<Integer> newPotentialPrefetchingCenter) {
+//		this.potentialNewCenter = newPotentialPrefetchingCenter;
+//	}
 	
 	//Update the current pre-fetching center coordinates
 	public synchronized void updateCurrentPrefetchingCenter(ArrayList<Integer> newPrefetchingCenter) {

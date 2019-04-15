@@ -25,17 +25,19 @@ public class Worker implements Runnable{
 			//System.out.println("Worker running");
 			try {
 				CoordinateQueueItem coordinateQueueItem = this.coordinateQueue.dequeue();
-				Tile tile = new Tile(coordinateQueueItem.getCoordinate(), this.zoom, this.initScale, this.filetype, this.size);
 				
-				//Add tile to tileMap of this client
-				this.connections.get(coordinateQueueItem.getClient()).getTileMap().addTile(tile);
-				
-				//Retrieve and decode tile
-				
-				//System.out.println("Decoding tile [" + coordinateQueueItem.getCoordinate().get(0) + ", " + coordinateQueueItem.getCoordinate().get(1) + "]");
-				tile.decode();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+				//Make sure client is still connected
+				if(coordinateQueueItem.getClient() != null) {
+					Tile tile = new Tile(coordinateQueueItem.getCoordinate(), this.zoom, this.initScale, this.filetype, this.size);
+					
+					//Add tile to tileMap of this client
+					this.connections.get(coordinateQueueItem.getClient()).getTileMap().addTile(tile);
+					
+					//Retrieve and decode tile
+					tile.decode();
+				}
+			} catch (Exception e) {
+				System.out.println("Client no longer active - terminating job");
 			}
 		}
 	}

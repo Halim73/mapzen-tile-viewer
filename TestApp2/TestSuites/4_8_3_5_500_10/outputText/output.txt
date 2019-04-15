@@ -1,0 +1,43 @@
+Prefetch Response Average for 000 seconds wait client 0: 861.4646941666667
+Prefetch Response Average for 000 seconds wait client 1: 2355.0490741999997
+Prefetch Response Average for 000 seconds wait client 2: 3003.4764296333333
+Prefetch Response Average for 000 seconds wait client 3: 3885.254488433334
+Prefetch Response Average for 000 seconds wait client 4: 4217.119890633333
+Prefetch Response Average for 100 seconds wait client 0: 784.5879882666666
+Prefetch Response Average for 100 seconds wait client 1: 1415.0444813666668
+Prefetch Response Average for 100 seconds wait client 2: 2087.5834796166664
+Prefetch Response Average for 100 seconds wait client 3: 2753.792579866667
+Prefetch Response Average for 100 seconds wait client 4: 3188.406827141667
+Prefetch Response Average for 200 seconds wait client 0: 718.9973076666668
+Prefetch Response Average for 200 seconds wait client 1: 1258.0084411333332
+Prefetch Response Average for 200 seconds wait client 2: 1881.7010597499998
+Prefetch Response Average for 200 seconds wait client 3: 2393.3409051666667
+Prefetch Response Average for 200 seconds wait client 4: 2906.1867325083335
+Prefetch Response Average for 300 seconds wait client 0: 656.57645425
+Prefetch Response Average for 300 seconds wait client 1: 1297.3936757333333
+Prefetch Response Average for 300 seconds wait client 2: 1958.6191334000002
+Prefetch Response Average for 300 seconds wait client 3: 2434.6792663833335
+Prefetch Response Average for 300 seconds wait client 4: 2786.8980781333335
+Prefetch Response Average for 400 seconds wait client 0: 475.17360578333336
+Prefetch Response Average for 400 seconds wait client 1: 1328.1451659499999
+Prefetch Response Average for 400 seconds wait client 2: 1977.7067805166669
+Prefetch Response Average for 400 seconds wait client 3: 2651.3682145499997
+Prefetch Response Average for 400 seconds wait client 4: 2769.513123508333
+Prefetch Response Average for 500 seconds wait client 0: 423.1355251499999
+Prefetch Response Average for 500 seconds wait client 1: 1307.51497785
+Prefetch Response Average for 500 seconds wait client 2: 1968.5404428166669
+Prefetch Response Average for 500 seconds wait client 3: 2646.997833683333
+Prefetch Response Average for 500 seconds wait client 4: 2818.7517896333334
+
+For client 0 Within Prefetch Move Average 69.90568854166666
+For client 1 Within Prefetch Move Average 130.0140934791667
+For client 2 Within Prefetch Move Average 109.61831829166665
+For client 3 Within Prefetch Move Average 128.14568029166668
+For client 4 Within Prefetch Move Average 104.07300751041663
+
+For client 0 Outside Prefetch Move Average 2344.8612332115385
+For client 1 Outside Prefetch Move Average 2343.1546008269233
+For client 2 Outside Prefetch Move Average 2344.9096324807692
+For client 3 Outside Prefetch Move Average 2345.5592264230772
+For client 4 Outside Prefetch Move Average 2343.494249134615
+

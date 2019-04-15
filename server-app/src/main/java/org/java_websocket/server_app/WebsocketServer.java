@@ -12,10 +12,10 @@ import java.util.concurrent.Executors;
 
 public class WebsocketServer extends WebSocketServer {
 
-    private static int TCP_PORT = 3010; 
-    private final int MAX_WORKER_THREADS = 5;
-    private final int MAX_SEARCH_RADIUS = 5;
-    private final int ZOOM = 10;
+    private int zoom;
+    private int max_worker_threads;
+    private int max_search_radius;
+    private int clientSearchRadius;
     private final int INIT_SCALE = 1;
     private final int SIZE = 256;
     private final String FILETYPE = "terrarium";
@@ -24,22 +24,26 @@ public class WebsocketServer extends WebSocketServer {
     private CoordinateQueue coordinateQueue;
 
     //Where should the worker threads be started? From constructor, or upon first connection?
-    public WebsocketServer() {
-        super(new InetSocketAddress(TCP_PORT));
+    public WebsocketServer(int tcp_port, int zoom, int max_worker_threads, int max_search_radius, int clientSearchRadius) {
+        super(new InetSocketAddress(tcp_port));
+        this.zoom = zoom;
+        this.max_worker_threads = max_worker_threads;
+        this.max_search_radius = max_search_radius;
+        this.clientSearchRadius = clientSearchRadius;
         this.connections = new Hashtable<WebSocket, Client>();
-        this.workerThreadPool = Executors.newFixedThreadPool(MAX_WORKER_THREADS);
+        this.workerThreadPool = Executors.newFixedThreadPool(max_worker_threads);
         this.coordinateQueue = new CoordinateQueue();
     }
 
     @Override
     public void onOpen(WebSocket connection, ClientHandshake handshake) {
-    	Client newClient = new Client(connection, MAX_SEARCH_RADIUS, this.coordinateQueue);
+    	Client newClient = new Client(connection, this.max_search_radius, this.clientSearchRadius, this.coordinateQueue);
     	
     	//If first connection, add worker threads to thread pool and execute
         if(this.connections.isEmpty()) {
         	System.out.println("Executing workers");
-        	for(int i = 0; i < MAX_WORKER_THREADS; i++) {
-        		Worker worker = new Worker(this.coordinateQueue, this.connections, ZOOM, INIT_SCALE, FILETYPE, SIZE);
+        	for(int i = 0; i < this.max_worker_threads; i++) {
+        		Worker worker = new Worker(this.coordinateQueue, this.connections, this.zoom, INIT_SCALE, FILETYPE, SIZE);
         		this.workerThreadPool.execute(worker);
         	}
         }
@@ -67,7 +71,7 @@ public class WebsocketServer extends WebSocketServer {
         //Update tileMap of this client and send decoded tile data
         Client currentClient = connections.get(connection);
         currentClient.updateTileMap(currentCoordinate, isCenter);
-        connection.send(currentClient.getRequestedTile(currentCoordinate).toString());
+        connection.send(currentClient.getRequestedTile(currentCoordinate, isCenter).toString());
     }
 
     @Override
