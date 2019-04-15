@@ -1,6 +1,9 @@
 package org.java_websocket.server_app;
 
+import java.util.Iterator;
 import java.util.LinkedList;
+
+import org.java_websocket.WebSocket;
 
 public class CoordinateQueue {
 	private LinkedList<CoordinateQueueItem> coordinateQueue;
@@ -25,7 +28,13 @@ public class CoordinateQueue {
 		return this.coordinateQueue.removeFirst();
 	}
 	
-	public synchronized void clearQueue() {
-		this.coordinateQueue.clear();
+	public synchronized void clearQueue(WebSocket client) {
+		Iterator<CoordinateQueueItem> itr = this.coordinateQueue.iterator();
+		while(itr.hasNext()) {
+			CoordinateQueueItem item = itr.next();
+			if(item.getClient().equals(client)) {
+				itr.remove();
+			}
+		}
 	}
 }

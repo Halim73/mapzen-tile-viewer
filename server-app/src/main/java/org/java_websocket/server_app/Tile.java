@@ -42,20 +42,21 @@ public class Tile {
 	public void decode() {
         double scale = Math.pow(2, (this.zoom - 10)) * this.initScale;
         
-        //System.out.println("Retrieving tile at " + this.coordinates.get(0) + ", " + this.coordinates.get(1));
+        try {
+        	this.im = utilities.retrieveImage(this.coordinates, this.zoom, this.filetype, this.size);
         
-        this.im = utilities.retrieveImage(this.coordinates, this.zoom, this.filetype, this.size);
-        for(int i = this.im.getMinY(); i < this.im.getHeight(); i++) {
-            for(int j = this.im.getMinX(); j < this.im.getWidth(); j++) {
-                this.data.add(scale * utilities.decodePixel(new Color(this.im.getRGB(j, i), true)));
-            }
+	        for(int i = this.im.getMinY(); i < this.im.getHeight(); i++) {
+	            for(int j = this.im.getMinX(); j < this.im.getWidth(); j++) {
+	                this.data.add(scale * utilities.decodePixel(new Color(this.im.getRGB(j, i), true)));
+	            }
+	        }
+	        
+	        this.setDoneDecoding();
         }
-        
-        //System.out.println("Setting done decoding for " + this.coordinates.get(0) + ", " + this.coordinates.get(1));
-        this.setDoneDecoding();
-        //System.out.println(this.data.get(0));
+        catch(Exception e) {
+        	System.out.println("File could not be found");
+        }
 	}
-	
 	
 	//Set tile state as done decoding
 	public synchronized void setDoneDecoding() {

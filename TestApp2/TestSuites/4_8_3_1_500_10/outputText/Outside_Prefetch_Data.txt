@@ -1,0 +1,26 @@
+Zoom level 10 client 0
+	Coordinates[253,243]	Response Time ms 1123.972729
+	Coordinates[198,188]	Response Time ms 1126.40871
+	Coordinates[288,278]	Response Time ms 1122.113034
+	Coordinates[218,208]	Response Time ms 1132.966287
+	Coordinates[303,293]	Response Time ms 1125.933688
+	Coordinates[273,263]	Response Time ms 1142.008199
+	Coordinates[233,223]	Response Time ms 1131.161204
+	Coordinates[268,258]	Response Time ms 1099.600413
+	Coordinates[238,228]	Response Time ms 1108.535374
+	Coordinates[208,198]	Response Time ms 1129.307765
+	Coordinates[213,203]	Response Time ms 1116.84399
+	Coordinates[248,238]	Response Time ms 1110.301773
+	Coordinates[293,283]	Response Time ms 1126.723306
+	Coordinates[243,233]	Response Time ms 1140.428965
+	Coordinates[298,288]	Response Time ms 1120.581586
+	Coordinates[203,193]	Response Time ms 1124.620694
+	Coordinates[278,268]	Response Time ms 1105.41047
+	Coordinates[228,218]	Response Time ms 1164.963984
+	Coordinates[263,253]	Response Time ms 1366.317483
+	Coordinates[223,213]	Response Time ms 1126.351252
+	Coordinates[258,248]	Response Time ms 1155.685982
+	Coordinates[313,303]	Response Time ms 1107.326486
+	Coordinates[308,298]	Response Time ms 1124.964302
+	Coordinates[318,308]	Response Time ms 1123.726401
+	Coordinates[283,273]	Response Time ms 1106.8691
